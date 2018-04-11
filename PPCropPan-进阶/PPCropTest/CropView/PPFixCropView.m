@@ -8,7 +8,7 @@
 
 #import "PPFixCropView.h"
 #import "PPCropLineView.h"
-
+#import "PPCropScrollView.h"
 typedef NS_ENUM(NSUInteger, PPCropViewLineEdge) {
     PPCropViewLineEdgeNone,
     PPCropViewLineEdgeTopLeft,
@@ -31,7 +31,7 @@ static const CGFloat kTOCropViewMinimumBoxSize = 42.0f;
 
 @property (nonatomic, strong) UIImageView *backgroundImageView;
 @property (nonatomic, strong) UIView *backgroundContainerView;
-@property (nonatomic, strong) UIScrollView *scrollView;
+@property (nonatomic, strong) PPCropScrollView *scrollView;
 
 @property (nonatomic, strong) UIView *overlayView;
 @property (nonatomic, strong) CAShapeLayer *shaperLayer;
@@ -45,6 +45,8 @@ static const CGFloat kTOCropViewMinimumBoxSize = 42.0f;
 @property (nonatomic, assign) CGRect cropOriginFrame;     /* 改变裁切框大小的时候   记录上一次裁切框Frame */
 @property (nonatomic, assign) PPCropViewLineEdge tappedEdge; /* 点击的范围枚举 */
 
+@property (nonatomic, strong) NSTimer *resetTimer;
+@property (nonatomic, assign) BOOL editing;
 
 @property (nonatomic, strong) PPCropLineView *gridOverlayView;
 
@@ -84,9 +86,10 @@ static const CGFloat kTOCropViewMinimumBoxSize = 42.0f;
 
 -(void)setup
 {
+    
+    __weak typeof (self) weakSelf = self;
     self.backgroundColor = [UIColor colorWithWhite:0.12f alpha:1.0f];
-
-    self.scrollView = [[UIScrollView alloc] initWithFrame:self.bounds];
+    self.scrollView = [[PPCropScrollView alloc] initWithFrame:self.bounds];
     self.scrollView.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
     self.scrollView.alwaysBounceHorizontal = YES;
     self.scrollView.alwaysBounceVertical = YES;
@@ -96,6 +99,8 @@ static const CGFloat kTOCropViewMinimumBoxSize = 42.0f;
     self.scrollView.zoomScale = 1.0f;
     [self addSubview:self.scrollView];
     
+    self.scrollView.touchesBegan = ^{ [weakSelf startEditing]; };
+    self.scrollView.touchesEnded = ^{ [weakSelf startResetTimer]; };
     
     //Grey transparent overlay view
     self.overlayView = [[UIView alloc] initWithFrame:self.bounds];
@@ -122,6 +127,7 @@ static const CGFloat kTOCropViewMinimumBoxSize = 42.0f;
     
     self.gridOverlayView = [[PPCropLineView alloc] initWithFrame:(CGRect){0,0,200,200}];
     self.gridOverlayView.userInteractionEnabled = NO;
+    
     [self addSubview:self.gridOverlayView];
     
     
@@ -130,14 +136,11 @@ static const CGFloat kTOCropViewMinimumBoxSize = 42.0f;
     [self.scrollView.panGestureRecognizer requireGestureRecognizerToFail:self.gridPanGestureRecognizer];
     [self addGestureRecognizer:self.gridPanGestureRecognizer];
     
+    
+    self.editing = NO;
+
 }
 
-
-
--(UIView *)viewForZoomingInScrollView:(UIScrollView *)scrollView
-{
-    return self.backgroundContainerView;
-}
 
 - (void)layoutInitialImage
 {
@@ -167,53 +170,35 @@ static const CGFloat kTOCropViewMinimumBoxSize = 42.0f;
     self.gridOverlayView.frame = self.cropBoxFrame;
 
     
-//    [self.overlayView.layer setMask:self.shaperLayer];
+    [self.overlayView.layer setMask:self.shaperLayer];
     
+
+}
+
+-(UIBezierPath *)beaPath:(CGRect)frame
+{
     
+    UIBezierPath *path = [UIBezierPath bezierPathWithRect:CGRectMake(0, 0, [UIScreen mainScreen].bounds.size.width, [UIScreen mainScreen].bounds.size.height)];
+    [path appendPath:[[UIBezierPath bezierPathWithRoundedRect:frame cornerRadius:1] bezierPathByReversingPath]];
+    return path;
     
 }
 
-//-(CAShapeLayer *)shaperLayer
-//{
-//    if (!_shaperLayer) {
-//
-//        UIBezierPath *path = [UIBezierPath bezierPathWithRect:CGRectMake(0, 0, [UIScreen mainScreen].bounds.size.width, [UIScreen mainScreen].bounds.size.height)];
-//        [path appendPath:[[UIBezierPath bezierPathWithRoundedRect:self.cropBoxFrame cornerRadius:1] bezierPathByReversingPath]];
-//        _shaperLayer = [CAShapeLayer layer];
-//        _shaperLayer.path = path.CGPath;
-//
-//
-//    }
-//    return _shaperLayer;
-//}
+-(CAShapeLayer *)shaperLayer
+{
+    if (!_shaperLayer) {
+
+        UIBezierPath *path = [UIBezierPath bezierPathWithRect:CGRectMake(0, 0, [UIScreen mainScreen].bounds.size.width, [UIScreen mainScreen].bounds.size.height)];
+        [path appendPath:[[UIBezierPath bezierPathWithRoundedRect:self.cropBoxFrame cornerRadius:1] bezierPathByReversingPath]];
+        _shaperLayer = [CAShapeLayer layer];
+        _shaperLayer.path = path.CGPath;
+
+    }
+    return _shaperLayer;
+}
 
 
 
-
-
-
-
-//-(CGRect)cropBoxFrame
-//{
-//    CGFloat scale  = 0.67f;
-//    CGRect contentRect = CGRectZero;
-//
-//
-//    contentRect.size.width = CGRectGetWidth(self.bounds) - (kTOCropViewPadding * 2);
-//    contentRect.size.height = contentRect.size.width * scale;
-//
-//    contentRect.origin.x = self.center.x-(contentRect.size.width/2);
-//    contentRect.origin.y = self.center.y-((contentRect.size.height)/2);
-//
-//
-//    self.scrollView.contentInset = (UIEdgeInsets){CGRectGetMinY(contentRect),
-//        CGRectGetMinX(contentRect),
-//        CGRectGetMaxY(self.bounds) - CGRectGetMaxY(contentRect),
-//        CGRectGetMaxX(self.bounds) - CGRectGetMaxX(contentRect)};
-//
-//    return contentRect;
-//
-//}
 
 - (CGRect)contentBounds
 {
@@ -254,6 +239,69 @@ static const CGFloat kTOCropViewMinimumBoxSize = 42.0f;
 {
     return (CGSize){self.image.size.width, self.image.size.height};
 }
+
+#pragma mark - Editing Mode -
+- (void)startEditing
+{
+    [self cancelResetTimer];
+    [self setEditing:YES animated:YES];
+}
+
+- (void)setEditing:(BOOL)editing
+{
+    [self setEditing:editing animated:NO];
+}
+
+
+
+- (void)setEditing:(BOOL)editing animated:(BOOL)animated
+{
+    if (editing == _editing)
+        return;
+    
+    _editing = editing;
+    
+    [self.gridOverlayView setGridHidden:!editing animated:animated];
+    
+    if (editing == NO) {
+        
+        [self moveCroppedContentToCenterAnimated:animated];
+
+    }
+
+}
+
+
+#pragma mark - Scroll View Delegate -
+
+- (UIView *)viewForZoomingInScrollView:(UIScrollView *)scrollView { return self.backgroundContainerView; }
+- (void)scrollViewWillBeginDragging:(UIScrollView *)scrollView    { [self startEditing]; }
+- (void)scrollViewWillBeginZooming:(UIScrollView *)scrollView withView:(UIView *)view { [self startEditing]; }
+- (void)scrollViewDidEndDecelerating:(UIScrollView *)scrollView   { [self startResetTimer]; }
+- (void)scrollViewDidEndZooming:(UIScrollView *)scrollView withView:(UIView *)view atScale:(CGFloat)scale { [self startResetTimer]; }
+
+#pragma mark - Timer -
+- (void)startResetTimer
+{
+    if (self.resetTimer)
+        return;
+    
+    self.resetTimer = [NSTimer scheduledTimerWithTimeInterval:kTOCropTimerDuration target:self selector:@selector(timerTriggered) userInfo:nil repeats:NO];
+}
+
+- (void)timerTriggered
+{
+    [self setEditing:NO animated:YES];
+    [self.resetTimer invalidate];
+    self.resetTimer = nil;
+}
+
+- (void)cancelResetTimer
+{
+    [self.resetTimer invalidate];
+    self.resetTimer = nil;
+}
+
 
 #pragma mark - Calculta CropFrame
 
@@ -300,7 +348,10 @@ static const CGFloat kTOCropViewMinimumBoxSize = 42.0f;
         CGRectGetMaxY(self.bounds) - CGRectGetMaxY(_cropBoxFrame),
         CGRectGetMaxX(self.bounds) - CGRectGetMaxX(_cropBoxFrame)};
     
+    self.shaperLayer.path = [self beaPath:self.cropBoxFrame].CGPath;
     
+//    [self.overlayView.layer setMask:self.shaperLayer];
+
     
     
 }
@@ -427,25 +478,78 @@ static const CGFloat kTOCropViewMinimumBoxSize = 42.0f;
     
 }
 
+- (void)moveCroppedContentToCenterAnimated:(BOOL)animated
+{
+    
+    CGRect contentRect = self.contentBounds;
+    CGRect cropFrame = self.cropBoxFrame;
+    
+    CGPoint focusPoint = (CGPoint){CGRectGetMidX(cropFrame), CGRectGetMidY(cropFrame)};
+    CGPoint midPoint = (CGPoint){CGRectGetMidX(contentRect), CGRectGetMidY(contentRect)};
+    
+    CGFloat scale = MIN(CGRectGetWidth(contentRect)/CGRectGetWidth(cropFrame), CGRectGetHeight(contentRect)/CGRectGetHeight(cropFrame));
+    
+//    CGRect NewFrame = (CGRect){cropFrame.origin,CGRectGetWidth(cropFrame)*scale,CGRectGetHeight(cropFrame)*scale};
+    
+    cropFrame.size.width = floorf(cropFrame.size.width * scale);
+    cropFrame.size.height = floorf(cropFrame.size.height * scale);
+    cropFrame.origin.x = contentRect.origin.x + floorf((contentRect.size.width - cropFrame.size.width) * 0.5f);
+    cropFrame.origin.y = contentRect.origin.y + floorf((contentRect.size.height - cropFrame.size.height) * 0.5f);
+    
+    //Work out the point on the scroll content that the focusPoint is aiming at
+    CGPoint contentTargetPoint = CGPointZero;
+    contentTargetPoint.x = ((focusPoint.x + self.scrollView.contentOffset.x) * scale);
+    contentTargetPoint.y = ((focusPoint.y + self.scrollView.contentOffset.y) * scale);
+    
+    NSLog(@"---%f", self.scrollView.contentOffset.x);
+    NSLog(@"++++++=%@", NSStringFromUIEdgeInsets(self.scrollView.contentInset));
+    
+    //Work out where the crop box is focusing, so we can re-align to center that point
+    __block CGPoint offset = CGPointZero;
+    offset.x = -midPoint.x + contentTargetPoint.x;
+    offset.y = -midPoint.y + contentTargetPoint.y;
+    
+    //clamp the content so it doesn't create any seams around the grid
+    offset.x = MAX(-cropFrame.origin.x, offset.x);
+    offset.y = MAX(-cropFrame.origin.y, offset.y);
+    
+    __weak typeof(self) weakSelf = self;
+
+    [UIView animateWithDuration:0.5f delay:0.0f usingSpringWithDamping:1.0f initialSpringVelocity:1.0f options:0 animations:^{
+        
+        typeof(self) strongSelf = weakSelf;
+        strongSelf.scrollView.zoomScale *= scale;
+        offset.x = MIN(-CGRectGetMaxX(cropFrame)+strongSelf.scrollView.contentSize.width, offset.x);
+        offset.y = MIN(-CGRectGetMaxY(cropFrame)+strongSelf.scrollView.contentSize.height, offset.y);
+        strongSelf.scrollView.contentOffset = offset;
+        
+        strongSelf.cropBoxFrame = cropFrame;
+        
+    }  completion:nil];
+    
+}
+
+
+
 
 
 #pragma mark - Gesture Recognizer
-
 - (void)gridPanGestureRecognized:(UIPanGestureRecognizer *)recognizer
 {
     CGPoint point = [recognizer locationInView:self];
     
     if (recognizer.state == UIGestureRecognizerStateBegan) {
-//        [self startEditing];
+        [self startEditing];
         self.panOriginPoint = point;
         self.cropOriginFrame = self.cropBoxFrame;
         self.tappedEdge = [self cropEdgeForPoint:self.panOriginPoint];
     }
     
-//    if (recognizer.state == UIGestureRecognizerStateEnded)
-//        [self startResetTimer];
+    if (recognizer.state == UIGestureRecognizerStateEnded)
+        [self startResetTimer];
     
     [self updateCropBoxFrameWithGesturePoint:point];
+    
 }
 
 - (void)longPressGestureRecognized:(UILongPressGestureRecognizer *)recognizer

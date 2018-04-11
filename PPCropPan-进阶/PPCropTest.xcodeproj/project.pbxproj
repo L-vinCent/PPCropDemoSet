@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		67675095207DEF5F009809C5 /* PPCropScrollView.m in Sources */ = {isa = PBXBuildFile; fileRef = 67675094207DEF5F009809C5 /* PPCropScrollView.m */; };
 		6770C8B020732281002A4104 /* AppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = 6770C8AF20732281002A4104 /* AppDelegate.m */; };
 		6770C8B320732281002A4104 /* ViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 6770C8B220732281002A4104 /* ViewController.m */; };
 		6770C8B620732281002A4104 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 6770C8B420732281002A4104 /* Main.storyboard */; };
@@ -41,6 +42,8 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		67675093207DEF5F009809C5 /* PPCropScrollView.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = PPCropScrollView.h; sourceTree = "<group>"; };
+		67675094207DEF5F009809C5 /* PPCropScrollView.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = PPCropScrollView.m; sourceTree = "<group>"; };
 		6770C8AB20732280002A4104 /* PPCropTest.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = PPCropTest.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		6770C8AE20732280002A4104 /* AppDelegate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = AppDelegate.h; sourceTree = "<group>"; };
 		6770C8AF20732281002A4104 /* AppDelegate.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = AppDelegate.m; sourceTree = "<group>"; };
@@ -164,6 +167,8 @@
 				6770C8E62073230F002A4104 /* PPCropMainVC.m */,
 				6770C8E72073230F002A4104 /* UIImage+compressIMG.h */,
 				6770C8E82073230F002A4104 /* UIImage+compressIMG.m */,
+				67675093207DEF5F009809C5 /* PPCropScrollView.h */,
+				67675094207DEF5F009809C5 /* PPCropScrollView.m */,
 			);
 			path = CropView;
 			sourceTree = "<group>";
@@ -308,6 +313,7 @@
 				6770C8E92073230F002A4104 /* PPCropBottomBar.m in Sources */,
 				6770C8EB2073230F002A4104 /* PPCropMainVC.m in Sources */,
 				6770C8B020732281002A4104 /* AppDelegate.m in Sources */,
+				67675095207DEF5F009809C5 /* PPCropScrollView.m in Sources */,
 				6770C8EC2073230F002A4104 /* UIImage+compressIMG.m in Sources */,
 				6770C8EA2073230F002A4104 /* PPCropLineView.m in Sources */,
 			);

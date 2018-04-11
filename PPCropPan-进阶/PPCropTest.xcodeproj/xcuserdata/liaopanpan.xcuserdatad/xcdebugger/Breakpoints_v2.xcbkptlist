@@ -10,12 +10,12 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "PPCropTest/CropView/PPFixCropView.m"
-            timestampString = "545047618.332443"
+            timestampString = "545124878.894338"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "289"
-            endingLineNumber = "289"
-            landmarkName = "-setCropBoxFrame:"
+            startingLineNumber = "558"
+            endingLineNumber = "558"
+            landmarkName = "-longPressGestureRecognized:"
             landmarkType = "7">
          </BreakpointContent>
       </BreakpointProxy>
@@ -26,12 +26,12 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "PPCropTest/CropView/PPFixCropView.m"
-            timestampString = "545047618.332953"
+            timestampString = "545124878.89469"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "164"
-            endingLineNumber = "164"
-            landmarkName = "-layoutInitialImage"
+            startingLineNumber = "561"
+            endingLineNumber = "561"
+            landmarkName = "-longPressGestureRecognized:"
             landmarkType = "7">
          </BreakpointContent>
       </BreakpointProxy>
