@@ -3,7 +3,8 @@
 
 ----
 * 简洁版 -- 固定裁切框大小，图片可拖动缩放，精准裁切 
-* 进阶版 -- 裁切框可拖动，动态显示交互图    2018.4.11
+* 进阶版 -- 裁切框可拖动，动态显示交互图    
+* 优化版 -- 增加毛玻璃效果，去掉 ShaperLayer     
 
 版本分开，便于理解，循环渐进
 
@@ -190,4 +191,27 @@ PPMainCropVC *vc = [[PPMainCropVC alloc]initWithImage:[UIImage imageNamed:@"1.pn
  
  ![](https://images2015.cnblogs.com/blog/912458/201603/912458-20160329130454379-1161572982.png)
  
+ ---
  
+ 
+ 
+### 优化版 2018.4.12
+
+* 上个版本中 通过 shapeLayer 将遮罩层切割了CropFrame，用于显示切割范围，在裁切框拖动结束后有延迟的情况,这里做一次修改
+
+```bash
+
+--- 去掉shapeLayer，新增
+//foregroundImageView， 复制background image view，展示裁切框中的图片区域
+
+//foregroundContainerView foregroundImageView的父视图，超出裁切范围就不显示  clipsToBounds = YES
+ 用来代替 shapeLayer 的显示切割范围的效果
+ 
+ 
+ self.foregroundImageView.frame = [self.backgroundContainerView.superview convertRect:self.backgroundContainerView.frame toView:self.foregroundContainerView];
+ // 将 backgroundContainerView 在 所在父视图的坐标 映射到  foregroundContainerView 上
+```
+ 
+* 添加一层毛玻璃View 层 ，在  backgroundContainerView 和 foregroundContainerView 之间 ，在交互收拾开始和结束时候做 alpha 透明度操作
+* 新的整体结构图差不多是这样
+![](https://upload-images.jianshu.io/upload_images/904629-23a7d1bded918c36.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240)
