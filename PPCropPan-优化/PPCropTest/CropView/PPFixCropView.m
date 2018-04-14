@@ -52,7 +52,7 @@ static const CGFloat kTOCropViewMinimumBoxSize = 42.0f;
 @property (nonatomic, strong) NSTimer *resetTimer;
 @property (nonatomic, assign) BOOL editing;
 
-@property (nonatomic, strong) PPCropLineView *gridOverlayView;
+@property (nonatomic, strong) PPCropLineView *gridOverlayView;  /*裁切框*/
 
 
 @property (nonatomic, strong) UIPanGestureRecognizer *gridPanGestureRecognizer; /* 裁剪框拖动手势 */
@@ -185,9 +185,7 @@ static const CGFloat kTOCropViewMinimumBoxSize = 42.0f;
     self.foregroundContainerView.frame = _cropBoxFrame;
     self.gridOverlayView.frame = self.cropBoxFrame;
 
-    
-    
-//    [self.overlayView.layer setMask:self.shaperLayer];
+
     
     [self matchForegroundToBackground];
     
@@ -197,29 +195,6 @@ static const CGFloat kTOCropViewMinimumBoxSize = 42.0f;
 {
     self.foregroundImageView.frame = [self.backgroundContainerView.superview convertRect:self.backgroundContainerView.frame toView:self.foregroundContainerView];
 }
-
--(UIBezierPath *)beaPath:(CGRect)frame
-{
-    
-    UIBezierPath *path = [UIBezierPath bezierPathWithRect:CGRectMake(0, 0, [UIScreen mainScreen].bounds.size.width, [UIScreen mainScreen].bounds.size.height)];
-    [path appendPath:[[UIBezierPath bezierPathWithRoundedRect:frame cornerRadius:1] bezierPathByReversingPath]];
-    return path;
-    
-}
-
-//-(CAShapeLayer *)shaperLayer
-//{
-//    if (!_shaperLayer) {
-//
-//        UIBezierPath *path = [UIBezierPath bezierPathWithRect:CGRectMake(0, 0, [UIScreen mainScreen].bounds.size.width, [UIScreen mainScreen].bounds.size.height)];
-//        [path appendPath:[[UIBezierPath bezierPathWithRoundedRect:self.cropBoxFrame cornerRadius:1] bezierPathByReversingPath]];
-//        _shaperLayer = [CAShapeLayer layer];
-//        _shaperLayer.path = path.CGPath;
-//
-//    }
-//    return _shaperLayer;
-//}
-
 
 
 
@@ -263,7 +238,7 @@ static const CGFloat kTOCropViewMinimumBoxSize = 42.0f;
     return (CGSize){self.image.size.width, self.image.size.height};
 }
 
-#pragma mark - Editing Mode -
+#pragma mark - Editing Mode
 - (void)startEditing
 {
     [self cancelResetTimer];
@@ -299,7 +274,7 @@ static const CGFloat kTOCropViewMinimumBoxSize = 42.0f;
 }
 
 
-#pragma mark - Scroll View Delegate -
+#pragma mark - Scroll View Delegate
 
 - (UIView *)viewForZoomingInScrollView:(UIScrollView *)scrollView { return self.backgroundContainerView; }
 - (void)scrollViewWillBeginDragging:(UIScrollView *)scrollView    { [self startEditing]; }
@@ -313,7 +288,7 @@ static const CGFloat kTOCropViewMinimumBoxSize = 42.0f;
 - (void)scrollViewDidEndZooming:(UIScrollView *)scrollView withView:(UIView *)view atScale:(CGFloat)scale { [self startResetTimer]; }
 - (void)scrollViewDidZoom:(UIScrollView *)scrollView  { [self matchForegroundToBackground];}
 
-#pragma mark - Timer -
+#pragma mark - Timer 
 - (void)startResetTimer
 {
     if (self.resetTimer)
