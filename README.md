@@ -144,7 +144,6 @@ cropBoxFrame 是裁切框的Frame，这里返回的是遮罩的镂空层,添加�
 
 * 使用
 
-
 ```bash
 PPMainCropVC *vc = [[PPMainCropVC alloc]initWithImage:[UIImage imageNamed:@"1.png"]];
     
@@ -157,7 +156,6 @@ PPMainCropVC *vc = [[PPMainCropVC alloc]initWithImage:[UIImage imageNamed:@"1.pn
 
 ```
 
-* [源码在这,具体效果请运行Demo](https://github.com/L-vinCent/PPCropDemo)
 
 * 在裁切页面隐藏了导航栏和状态栏，如果图片拖动与裁切框有偏移，看看Info.plist 中 ， 设置 View controller-based status bar appearance 为NO，该参数决定我们项目状态栏的显隐藏是否以各控制器的设置为准。
 
